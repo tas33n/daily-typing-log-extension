@@ -1,0 +1,71 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="100" x2="920" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6EE7FF"/>
+      <stop offset="0.5" stop-color="#4F7CFF"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="250" y1="230" x2="780" y2="790" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.98"/>
+      <stop offset="1" stop-color="#EAF1FF" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="355" y1="315" x2="670" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E3A8A"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="tool" x1="555" y1="515" x2="760" y2="730" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#10B981"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#0F172A" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <rect x="80" y="80" width="864" height="864" rx="190" fill="url(#bg)"/>
+
+  <circle cx="275" cy="250" r="120" fill="#FFFFFF" opacity="0.12"/>
+  <circle cx="795" cy="780" r="150" fill="#FFFFFF" opacity="0.08"/>
+
+  <g filter="url(#shadow)">
+    <rect x="220" y="220" width="584" height="584" rx="120" fill="url(#panel)"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="340" y="300" width="320" height="320" rx="72" fill="url(#chip)"/>
+  </g>
+
+  <g stroke="#7DD3FC" stroke-width="18" stroke-linecap="round" opacity="0.95">
+    <line x1="395" y1="260" x2="395" y2="300"/>
+    <line x1="500" y1="260" x2="500" y2="300"/>
+    <line x1="605" y1="260" x2="605" y2="300"/>
+
+    <line x1="395" y1="620" x2="395" y2="660"/>
+    <line x1="500" y1="620" x2="500" y2="660"/>
+    <line x1="605" y1="620" x2="605" y2="660"/>
+
+    <line x1="300" y1="395" x2="340" y2="395"/>
+    <line x1="300" y1="500" x2="340" y2="500"/>
+    <line x1="300" y1="605" x2="340" y2="605"/>
+
+    <line x1="660" y1="395" x2="700" y2="395"/>
+    <line x1="660" y1="500" x2="700" y2="500"/>
+    <line x1="660" y1="605" x2="700" y2="605"/>
+  </g>
+
+  <g fill="#F8FBFF">
+    <path d="M415 545L468 380H504L557 545H519L508 510H463L452 545H415ZM472 474H499L486 429L472 474Z"/>
+    <path d="M585 380H622V545H585V380Z"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <circle cx="705" cy="690" r="110" fill="url(#tool)"/>
+  </g>
+  <g transform="translate(705 690) rotate(-35) translate(-705 -690)">
+    <path d="M724 631C708 617 683 617 668 632C653 647 652 671 666 688L624 730C617 737 617 748 624 755L641 772C648 779 659 779 666 772L708 730C725 744 749 743 764 728C779 713 780 688 765 672L737 699L714 676L741 648C736 642 730 636 724 631Z" fill="#FFFFFF"/>
+  </g>
+
+  <g fill="#FDE68A">
+    <path d="M247 670L271 619L295 670L346 694L295 718L271 769L247 718L196 694L247 670Z" opacity="0.95"/>
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+node_modules
+.output
+.wxt
+*.zip
+
+# Secrets (keep the template, ignore the real values)
+.env
+.env.local
+.env.*.local
+!.env.example
