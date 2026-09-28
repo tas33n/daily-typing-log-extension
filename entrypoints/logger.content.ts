@@ -1,5 +1,5 @@
 import { browser } from 'wxt/browser';
-import type { LogEntry } from '../lib/types';
+import type { LogEntry, FieldInfo } from '../lib/types';
 
 type Editable = HTMLInputElement | HTMLTextAreaElement | HTMLElement;
 
@@ -9,6 +9,7 @@ type Session = {
   startedAt: number;
   lastChangedAt: number;
   timer?: number;
+  fieldInfo?: FieldInfo;
 };
 
 const sessions = new Map<Editable, Session>();
@@ -60,6 +61,128 @@ function readText(el: Editable): string {
   return el.innerText || el.textContent || '';
 }
 
+function getFieldInfo(el: Editable): FieldInfo {
+  const info: FieldInfo = {
+    label: '',
+    type: '',
+    isPassword: false
+  };
+
+  if (el instanceof HTMLInputElement) {
+    info.type = el.type.toLowerCase();
+    info.isPassword = el.type.toLowerCase() === 'password';
+    info.name = el.name || undefined;
+    info.placeholder = el.placeholder || undefined;
+    info.id = el.id || undefined;
+
+    // Priority: label > name > placeholder > type
+    // 1. Try to find associated label
+    if (el.id) {
+      const labelEl = document.querySelector(`label[for="${el.id}"]`);
+      if (labelEl?.textContent?.trim()) {
+        info.label = labelEl.textContent.trim();
+      }
+    }
+    // 2. Check parent label
+    if (!info.label) {
+      const parentLabel = el.closest('label');
+      if (parentLabel?.textContent?.trim()) {
+        // Get just the label text, not the input value
+        const clone = parentLabel.cloneNode(true) as HTMLElement;
+        const inputInClone = clone.querySelector('input, textarea, select');
+        if (inputInClone) inputInClone.remove();
+        const labelText = clone.textContent?.trim();
+        if (labelText) info.label = labelText;
+      }
+    }
+    // 3. Check aria-label / aria-labelledby
+    if (!info.label) {
+      if (el.getAttribute('aria-label')?.trim()) {
+        info.label = el.getAttribute('aria-label')!.trim();
+      } else if (el.getAttribute('aria-labelledby')) {
+        const labelledBy = document.getElementById(el.getAttribute('aria-labelledby')!);
+        if (labelledBy?.textContent?.trim()) {
+          info.label = labelledBy.textContent.trim();
+        }
+      }
+    }
+    // 4. Fallback to name attribute
+    if (!info.label && el.name?.trim()) {
+      info.label = el.name.trim();
+    }
+    // 5. Fallback to placeholder
+    if (!info.label && el.placeholder?.trim()) {
+      info.label = el.placeholder.trim();
+    }
+    // 6. Final fallback to type
+    if (!info.label) {
+      info.label = info.type || 'input';
+    }
+  } else if (el instanceof HTMLTextAreaElement) {
+    info.type = 'textarea';
+    info.name = el.name || undefined;
+    info.placeholder = el.placeholder || undefined;
+    info.id = el.id || undefined;
+
+    if (el.id) {
+      const labelEl = document.querySelector(`label[for="${el.id}"]`);
+      if (labelEl?.textContent?.trim()) {
+        info.label = labelEl.textContent.trim();
+      }
+    }
+    if (!info.label) {
+      const parentLabel = el.closest('label');
+      if (parentLabel?.textContent?.trim()) {
+        const clone = parentLabel.cloneNode(true) as HTMLElement;
+        const textareaInClone = clone.querySelector('textarea');
+        if (textareaInClone) textareaInClone.remove();
+        const labelText = clone.textContent?.trim();
+        if (labelText) info.label = labelText;
+      }
+    }
+    if (!info.label && el.getAttribute('aria-label')?.trim()) {
+      info.label = el.getAttribute('aria-label')!.trim();
+    }
+    if (!info.label && el.name?.trim()) {
+      info.label = el.name.trim();
+    }
+    if (!info.label && el.placeholder?.trim()) {
+      info.label = el.placeholder.trim();
+    }
+    if (!info.label) {
+      info.label = 'textarea';
+    }
+  } else {
+    // contenteditable
+    info.type = 'contenteditable';
+    info.isPassword = false;
+    info.id = el.id || undefined;
+
+    // Try to find a label-like element nearby
+    const ariaLabel = el.getAttribute('aria-label');
+    if (ariaLabel?.trim()) {
+      info.label = ariaLabel.trim();
+    } else if (el.id) {
+      const labelEl = document.querySelector(`label[for="${el.id}"]`);
+      if (labelEl?.textContent?.trim()) {
+        info.label = labelEl.textContent.trim();
+      }
+    }
+    if (!info.label) {
+      // Look for preceding sibling or parent text that might be a label
+      const prev = el.previousElementSibling;
+      if (prev?.textContent?.trim() && prev.tagName !== 'SCRIPT' && prev.tagName !== 'STYLE') {
+        info.label = prev.textContent.trim().slice(0, 100);
+      }
+    }
+    if (!info.label) {
+      info.label = 'contenteditable';
+    }
+  }
+
+  return info;
+}
+
 function getOrCreateSession(el: Editable, now: number): Session {
   const existing = sessions.get(el);
   if (existing) return existing;
@@ -68,7 +191,8 @@ function getOrCreateSession(el: Editable, now: number): Session {
     id: crypto.randomUUID(),
     element: el,
     startedAt: now,
-    lastChangedAt: now
+    lastChangedAt: now,
+    fieldInfo: getFieldInfo(el)
   };
   sessions.set(el, session);
   return session;
@@ -89,13 +213,17 @@ async function saveSession(session: Session): Promise<void> {
   const text = readText(el).trim();
   if (!text) return;
 
+  // Get field info if not already cached
+  const fieldInfo = session.fieldInfo ?? getFieldInfo(el);
+
   const entry: LogEntry = {
     id: session.id,
     date: localDate(session.startedAt),
     time: localTime(session.startedAt),
     timestamp: session.startedAt,
     url: location.href,
-    text
+    text,
+    field: fieldInfo
   };
 
   try {

@@ -1,8 +1,20 @@
-import type { LogEntry } from './types';
+import type { LogEntry, FieldInfo } from './types';
 
 function escapeCsv(value: string | number): string {
   const s = String(value ?? '');
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function fieldInfoToString(field?: FieldInfo): string {
+  if (!field) return '';
+  const parts = [];
+  if (field.label) parts.push(`Field: ${field.label}`);
+  if (field.type && field.type !== field.label) parts.push(`Type: ${field.type}`);
+  if (field.name && field.name !== field.label) parts.push(`Name: ${field.name}`);
+  if (field.placeholder && field.placeholder !== field.label) parts.push(`Placeholder: ${field.placeholder}`);
+  if (field.id) parts.push(`ID: ${field.id}`);
+  if (field.isPassword) parts.push('⚠ Password field');
+  return parts.join(' | ');
 }
 
 export function toCsv(entries: LogEntry[]): string {
@@ -10,10 +22,11 @@ export function toCsv(entries: LogEntry[]): string {
     entry.date,
     entry.time,
     entry.url,
-    entry.text
+    entry.text,
+    fieldInfoToString(entry.field)
   ]);
 
-  return [['date', 'time', 'url', 'text'], ...rows]
+  return [['date', 'time', 'url', 'text', 'field'], ...rows]
     .map((row) => row.map(escapeCsv).join(','))
     .join('\r\n');
 }
@@ -36,6 +49,7 @@ export function toTxt(entries: LogEntry[]): string {
       `Time: ${entry.time}`,
       `URL: ${entry.url}`,
       `Text: ${entry.text}`,
+      fieldInfoToString(entry.field) ? `Field: ${fieldInfoToString(entry.field)}` : '',
       ''
     );
   }
