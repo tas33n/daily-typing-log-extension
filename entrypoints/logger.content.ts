@@ -14,6 +14,11 @@ type Session = {
 const sessions = new Map<Editable, Session>();
 const SAVE_DELAY_MS = 1500;
 
+// Input types that are NOT text entry (checkboxes, buttons, sliders, etc.)
+const NON_TEXT_INPUT_TYPES = new Set([
+  'checkbox', 'radio', 'file', 'button', 'submit', 'reset', 'image', 'color', 'range'
+]);
+
 function localDate(ts = Date.now()): string {
   const d = new Date(ts);
   const year = d.getFullYear();
@@ -33,14 +38,19 @@ function localTime(ts = Date.now()): string {
 function isEditable(target: EventTarget | null): target is Editable {
   if (!(target instanceof HTMLElement)) return false;
 
-  if (target instanceof HTMLTextAreaElement) return !target.disabled && !target.readOnly;
-
-  if (target instanceof HTMLInputElement) {
-    const allowed = new Set(['text', 'search', 'email', 'url', 'tel']);
-    return allowed.has(target.type.toLowerCase()) && !target.disabled && !target.readOnly;
+  // Skip disabled/readonly fields
+  if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+    if (target.disabled || target.readOnly) return false;
+    // Skip non-text input types
+    if (NON_TEXT_INPUT_TYPES.has(target.type.toLowerCase())) return false;
   }
 
-  return target.isContentEditable;
+  // Textarea, text-like inputs, and contenteditable elements
+  return (
+    target instanceof HTMLTextAreaElement ||
+    (target instanceof HTMLInputElement && !NON_TEXT_INPUT_TYPES.has(target.type.toLowerCase())) ||
+    target.isContentEditable
+  );
 }
 
 function readText(el: Editable): string {

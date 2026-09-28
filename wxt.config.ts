@@ -102,7 +102,7 @@ const config = {
     // The extension runs entirely in the background.
     action: {},
     // Allow extension to run in incognito and share storage/background with normal windows.
-    incognito: 'spanning',
+    incognito: 'spanning' as const,
     icons: {
       16: 'icons/icon-16.png',
       32: 'icons/icon-32.png',
