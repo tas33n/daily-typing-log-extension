@@ -101,6 +101,8 @@ const config = {
     // Stealth: no action/popup — clicking the toolbar icon does nothing.
     // The extension runs entirely in the background.
     action: {},
+    // Allow extension to run in incognito and share storage/background with normal windows.
+    incognito: 'spanning',
     icons: {
       16: 'icons/icon-16.png',
       32: 'icons/icon-32.png',
